@@ -193,17 +193,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }, {
 	    key: 'loadJs',
 	    value: function loadJs(src, cb) {
-	      var script = document.createElement('script');
-	      script.src = src;
-
-	      script.onload = script.onreadystatechange = function () {
-	        if (script.readyState === 'loaded' || script.readyState === 'complete') {
-	          cb && cb();
-	        }
-	      };
-
-	      document.getElementsByTagName[head][0].appendChild(script);
-	    }
+               var timeID;
+               var script = document.createElement("script");
+               var supportLoad = "onload" in script;
+               var onEvent = supportLoad ? "onload" : "onreadystatechange";
+               script[onEvent] = function onLoad() {
+		   if (!supportLoad && !timeID && /complete|loaded/.test(script.readyState)) {
+			timeID = setTimeout(onLoad)
+			return;
+		   }
+		   if (supportLoad || timeID) {
+			clearTimeout(timeID)
+			cb && cb();
+                   }
+               }
+               var head = document.getElementsByTagName("head")[0];
+               head.insertBefore(script, head.firstChild); 
+               script.src = src; 
+            }
 	  }, {
 	    key: 'setMessages',
 	    value: function setMessages(obj) {
